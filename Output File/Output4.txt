@@ -1,0 +1,249 @@
+Operation:  b1
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1         active            1           []      
+-----------------------------------------------------------
+Operation:  r1 (Z)
+T1 has a read lock on item Z
+
+Lock Table :
+DataItem         Lock Status     Locking Taransaction    
+   Z                 RL                ['1']            
+
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1         active            1           ['Z,RL']        
+-----------------------------------------------------------
+Operation:  b2
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1         active            1           ['Z,RL']        
+2         active            2           []      
+-----------------------------------------------------------
+Operation:  r2 (X)
+T2 has a read lock on item X
+
+Lock Table :
+DataItem         Lock Status     Locking Taransaction    
+   Z                 RL                ['1']            
+   X                 RL                ['2']            
+
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1         active            1           ['Z,RL']        
+2         active            2           ['X,RL']        
+-----------------------------------------------------------
+Operation:  w2 (X)
+T2 has upgraded to write lock from read Lock on item X
+
+Lock Table :
+DataItem         Lock Status     Locking Taransaction    
+   Z                 RL                ['1']            
+   X                 WL                ['2']            
+
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1         active            1           ['Z,RL']        
+2         active            2           ['X,WL']        
+-----------------------------------------------------------
+Operation:  w1 (Z)
+T1 has upgraded to write lock from read Lock on item Z
+
+Lock Table :
+DataItem         Lock Status     Locking Taransaction    
+   Z                 WL                ['1']            
+   X                 WL                ['2']            
+
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1         active            1           ['Z,WL']        
+2         active            2           ['X,WL']        
+-----------------------------------------------------------
+Operation:  r2 (Y)
+T2 has a read lock on item Y
+
+Lock Table :
+DataItem         Lock Status     Locking Taransaction    
+   Z                 WL                ['1']            
+   X                 WL                ['2']            
+   Y                 RL                ['2']            
+
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1         active            1           ['Z,WL']        
+2         active            2           ['X,WL', 'Y,RL']        
+-----------------------------------------------------------
+Operation:  r1 (Y)
+T1 has a read lock on item Y
+
+Lock Table :
+DataItem         Lock Status     Locking Taransaction    
+   Z                 WL                ['1']            
+   X                 WL                ['2']            
+   Y                 RL              ['2', '1']         
+
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1         active            1           ['Z,WL', 'Y,RL']        
+2         active            2           ['X,WL', 'Y,RL']        
+-----------------------------------------------------------
+Operation:  w1 (Y)
+w1 is waiting for item Y
+
+Lock Table :
+DataItem         Lock Status     Locking Taransaction    
+   Z                 WL                ['1']            
+   X                 WL                ['2']            
+   Y                 RL              ['2', '1']         
+
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1        blocked            1           ['Z,WL', 'Y,RL']        
+2         active            2           ['X,WL', 'Y,RL']        
+-----------------------------------------------------------
+Operation:  b3
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1        blocked            1           ['Z,WL', 'Y,RL']        
+2         active            2           ['X,WL', 'Y,RL']        
+3         active            3           []      
+-----------------------------------------------------------
+Operation:  r3 (Z)
+Item Z is Writelocked and not available!
+Transaction T3 is aborted
+
+Lock Table :
+DataItem         Lock Status     Locking Taransaction    
+   Z                 WL                ['1']            
+   X                 WL                ['2']            
+   Y                 RL              ['2', '1']         
+
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1        blocked            1           ['Z,WL', 'Y,RL']        
+2         active            2           ['X,WL', 'Y,RL']        
+3        aborted            3           []      
+-----------------------------------------------------------
+Operation: e1
+Other Operations for transaction 1 are in waiting. So, Operation e1 has been added to waitlist and could not be committed.
+
+Lock Table :
+DataItem         Lock Status     Locking Taransaction    
+   Z                 WL                ['1']            
+   X                 WL                ['2']            
+   Y                 RL              ['2', '1']         
+
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1        blocked            1           ['Z,WL', 'Y,RL']        
+2         active            2           ['X,WL', 'Y,RL']        
+3        aborted            3           []      
+-----------------------------------------------------------
+Operation:  w3 (Z)
+Operation w3 could not be performed as transaction 3 is already aborted!
+
+Lock Table :
+DataItem         Lock Status     Locking Taransaction    
+   Z                 WL                ['1']            
+   X                 WL                ['2']            
+   Y                 RL              ['2', '1']         
+
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1        blocked            1           ['Z,WL', 'Y,RL']        
+2         active            2           ['X,WL', 'Y,RL']        
+3        aborted            3           []      
+-----------------------------------------------------------
+Operation:  w2 (Y)
+Transaction T2 is aborted
+T1 has upgraded to write lock from read Lock on item Y
+Processing the operation w1 from the wait list.
+Assigning lock to operation w1 from waiting list on item Y
+Operation: e1
+Transaction 1 has committed and released all the locks held on data items
+
+Lock Table :
+DataItem         Lock Status     Locking Taransaction    
+   Z                                     []             
+   X                                     []             
+   Y                                     []             
+
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1       committed           1           []      
+2        aborted            2           ['X,WL', 'Y,RL']        
+3        aborted            3           []      
+-----------------------------------------------------------
+
+Lock Table :
+DataItem         Lock Status     Locking Taransaction    
+   Z                                     []             
+   X                                     []             
+   Y                                     []             
+
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1       committed           1           []      
+2        aborted            2           []      
+3        aborted            3           []      
+-----------------------------------------------------------
+Operation: e2
+Operation e2 could not be performed as transaction 2 is already aborted!
+
+Lock Table :
+DataItem         Lock Status     Locking Taransaction    
+   Z                                     []             
+   X                                     []             
+   Y                                     []             
+
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1       committed           1           []      
+2        aborted            2           []      
+3        aborted            3           []      
+-----------------------------------------------------------
+Operation:  r3 (X)
+Operation r3 could not be performed as transaction 3 is already aborted!
+
+Lock Table :
+DataItem         Lock Status     Locking Taransaction    
+   Z                                     []             
+   X                                     []             
+   Y                                     []             
+
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1       committed           1           []      
+2        aborted            2           []      
+3        aborted            3           []      
+-----------------------------------------------------------
+Operation:  w3 (X)
+Operation w3 could not be performed as transaction 3 is already aborted!
+
+Lock Table :
+DataItem         Lock Status     Locking Taransaction    
+   Z                                     []             
+   X                                     []             
+   Y                                     []             
+
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1       committed           1           []      
+2        aborted            2           []      
+3        aborted            3           []      
+-----------------------------------------------------------
+Operation: e3
+Operation e3 could not be performed as transaction 3 is already aborted!
+
+Lock Table :
+DataItem         Lock Status     Locking Taransaction    
+   Z                                     []             
+   X                                     []             
+   Y                                     []             
+
+Transaction Table:
+id       Status          Timestamp       Items Locked
+1       committed           1           []      
+2        aborted            2           []      
+3        aborted            3           []      
+-----------------------------------------------------------
